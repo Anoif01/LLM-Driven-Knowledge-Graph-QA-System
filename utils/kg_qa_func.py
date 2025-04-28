@@ -10,7 +10,7 @@ from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 
 
 # ------------------- Data loading -------------------
-def load_triples(file_path='./triples.csv'):
+def load_triples(file_path='./data/triples.csv'):
     triple_df = pd.read_csv(file_path)
     triples = list(zip(triple_df["Subject"], triple_df["Predicate"], triple_df["Object"]))
     return triples
@@ -125,7 +125,7 @@ def structured_kg_search(parsed, triples):
 
     return results, direction, related_graphs
 
-def generate_answer(question, file_path='./20002023film_triples.csv', model_name="google/gemma-2b-it"):
+def generate_answer(question, file_path='./data/triples.csv', model_name="google/gemma-2b-it"):
     triples = load_triples(file_path)
     qa_pipeline = load_qa_pipeline(model_name)
 
