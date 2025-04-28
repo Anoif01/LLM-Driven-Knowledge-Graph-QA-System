@@ -6,7 +6,6 @@ import json
 import difflib
 import torch
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-# from huggingface_hub import login
 
 
 # ------------------- Data loading -------------------
