@@ -4,6 +4,9 @@ from kg_qa_func import load_qa_pipeline, generate_answer, load_triples
 import networkx as nx
 import matplotlib.pyplot as plt
 
+from huggingface_hub import login
+login(token=gemma_key)  # use your hf-token for gated models
+
 def plot_kg_triples(triples, all_triples):
     if not triples:
         st.warning("No triples to visualize.")
@@ -83,13 +86,13 @@ col1, spacer, col2 = st.columns([5, 1, 5])
 # --- Left column (User input + Final answer) ---
 with col1:
     st.header("🔎 Ask a Question")
-    user_question = st.text_input("Ask a question about movies:")
+    user_question = st.text_input("Ask a question about movies (director, actor, type, release year):")
 
     if st.button("📤 Search", key="search_button"):
         if not user_question.strip():
             st.warning("Please enter a question.")
         else:
-            with st.spinner("🔍 Analyzing your question with LLM..."):
+            with st.spinner("⌛ Analyzing your question with LLM..."):
                 parsed_info, triples_matched, answer, related_graphs = generate_answer(user_question)
 
             # --- LLM intent parsing result ---
