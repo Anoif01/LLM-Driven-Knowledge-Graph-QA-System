@@ -6,15 +6,31 @@ import json
 import difflib
 import torch
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+from huggingface_hub import login
+import ast
 
+# ------------------- 环境初始化 -------------------
 
-# ------------------- Data loading -------------------
-def load_triples(file_path='./data/triples.csv'):
+# 登录 huggingface hub（注意：实际使用请安全管理 token）
+# from google.colab import userdata   # 只在Colab时需要
+# gemma_key = userdata.get('gemma_token')
+# login(token=gemma_key)
+
+# 手动传入 token 时（如果需要）
+# login(token="your_hf_token")
+
+# ------------------- 数据加载 -------------------
+def load_triples(file_path='./20002017_triples.csv'):
     triple_df = pd.read_csv(file_path)
     triples = list(zip(triple_df["Subject"], triple_df["Predicate"], triple_df["Object"]))
     return triples
+    # triple_df = pd.read_csv(file_path)
+    # triple_df['Subject'] = triple_df['Subject'].apply(lambda x: re.sub(r" \(.*?\)", '', x))
+    # triple_df['Object'] = triple_df['Object'].apply(lambda x: re.sub(r" \(.*?\)", '', x))
+    # triples = list(zip(triple_df["Subject"], triple_df["Predicate"], triple_df["Object"]))
+    # return triples
 
-# ------------------- Model loading -------------------
+# ------------------- 模型加载 -------------------
 
 def load_qa_pipeline(model_name="google/gemma-2b-it"):
     """
@@ -35,7 +51,7 @@ def load_qa_pipeline(model_name="google/gemma-2b-it"):
     qa_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
     return qa_pipeline
 
-# ------------------- Funcs -------------------
+# ------------------- 功能函数 -------------------
 
 def build_prompt(question):
     return f"""
@@ -89,9 +105,70 @@ def parse_query_with_gemma(question, qa_pipeline):
     except json.JSONDecodeError:
         return {"error": "JSON decode failed", "raw": last_json}
 
-def fuzzy_match(entity, target, threshold=0.8):
-    seq = difflib.SequenceMatcher(None, entity.lower(), target.lower())
-    return seq.ratio() >= threshold
+def strip_brackets(text):
+    """Remove the brackets and their contents"""
+    return bracket_pattern.sub('', text).strip()
+
+def remove_bracket_symbols_only(text):
+    """Remove only the bracket symbols and retain the contents"""
+    return re.sub(r'[()]', '', text).strip()
+
+def split_bracket_parts(text):
+    """Extract the contents outside the brackets and inside the brackets,"""
+    match = re.search(r"(.*?)\s*\((.*?)\)(.*)", text)
+    if match:
+        return match.group(1).strip(), match.group(2).strip(), match.group(3).strip()
+    else:
+        return text.strip(), None
+
+def fuzzy_match(entity, target, threshold=0.9):
+    # regex for Parentheses
+    bracket_pattern = re.compile(r"\(.*?\)")
+
+    s = entity.strip().lower()
+    m = target.strip().lower()
+
+    # Case 1: If there are no parentheses, match directly.
+    if '(' not in m:
+        # score = fuzz.token_sort_ratio(s, m)
+        seq = difflib.SequenceMatcher(None, s, m)
+        return seq.ratio() >= threshold
+
+    # Case 2: When parentheses exist
+    ## Remove all bracket contents
+    m_no_brackets = strip_brackets(m)
+    score_no_brackets = difflib.SequenceMatcher(None, s, m_no_brackets)
+    if score_no_brackets.ratio() >= threshold:
+        return True
+
+    ## Remove only the bracket
+    m_keep_content = remove_bracket_symbols_only(m)
+    score_keep_content = difflib.SequenceMatcher(None, s, m_keep_content)
+    if score_keep_content.ratio() >= threshold:
+        return True
+
+    ## Extract the contents outside and inside the brackets
+    m1, m2, m3 = split_bracket_parts(m)
+    if m1 != '':
+        score_m1 = difflib.SequenceMatcher(None, s, m1).ratio()
+    else:
+        score_m1 = 0
+    
+    if m2 != '':
+        score_m2 = difflib.SequenceMatcher(None, s, m2).ratio()
+    else:
+        score_m2 = 0
+    
+    if m3 != '':
+        score_m3 = difflib.SequenceMatcher(None, s, m3).ratio()
+    else:
+        score_m3 = 0
+
+    if max(score_m1, score_m2, score_m2) >= threshold:
+        return True
+
+    # ALL fail
+    return False
 
 def structured_kg_search(parsed, triples):
     results = []
@@ -101,7 +178,7 @@ def structured_kg_search(parsed, triples):
     entity_type = parsed.get("entity_type", "").lower()
     entity = parsed.get("entity", "").lower()
 
-    # Inferring direction based on entity type
+    # 根据实体类型推断方向
     if entity_type == 'movie':
         direction = 'forward'
     else:
@@ -124,7 +201,7 @@ def structured_kg_search(parsed, triples):
 
     return results, direction, related_graphs
 
-def generate_answer(question, file_path='./data/triples.csv', model_name="google/gemma-2b-it"):
+def generate_answer(question, file_path='./20002017_triples.csv', model_name="google/gemma-2b-it"):
     triples = load_triples(file_path)
     qa_pipeline = load_qa_pipeline(model_name)
 
@@ -157,7 +234,7 @@ def generate_answer(question, file_path='./data/triples.csv', model_name="google
         else:
             return parsed, facts, ", ".join(movies), related_graphs
 
-# ------------------- Test -------------------
+# ------------------- 测试入口 -------------------
 
 if __name__ == "__main__":
     test_question = "Which films did Tom Hanks act in?"
