@@ -68,7 +68,7 @@ st.markdown(
     ### 📌 About the System:
     This system uses a Large Language Model to understand user questions and translate them into Knowledge Graph queries.
     It directly retrieves facts from a curated movie knowledge graph, providing answers that are **accurate, explainable, and trustworthy**.
-    The Movie Knowledge Graph is constructed from **DBpedia**[1], focusing on films released between **2000 and 2023**.
+    The Movie Knowledge Graph is constructed from **Kaggle Movie Dataset**[1], focusing on films released before **2017**.
 
     ### ⚙️ Key Components:
     - **LLM Intent Parsing**: User queries are converted into Knowledge Graph query languages using the LLM **Gemma 2B-It**.
@@ -92,8 +92,8 @@ with col1:
         if not user_question.strip():
             st.warning("Please enter a question.")
         else:
-            with st.spinner("⌛ Analyzing your question with LLM..."):
-                parsed_info, triples_matched, answer, related_graphs = generate_answer(user_question)
+            with st.spinner("⌛ Analyzing your question"):
+                parsed_info, triples_matched, answer, related_graphs = generate_answer(user_question, file_path='./data/20002017_triples.csv')
 
             # --- LLM intent parsing result ---
             st.markdown("---")
@@ -139,11 +139,10 @@ with col2:
 st.markdown("---")
 st.markdown(
     """
+    
     <div style='text-align: center; font-size: 0.8em; color: gray;'>
-    Reference: [1] Lehmann, J., et al. (2015).
-    <i>DBpedia – A Large-scale, Multilingual Knowledge Base Extracted from Wikipedia.</i>
-    Semantic Web Journal, 6(2), 167–195.
-    <a href='https://svn.aksw.org/papers/2013/SWJ_DBpedia/public.pdf' target='_blank'>Link</a>
+    Reference: [1] Kaggle - The Movies Dataset contains metadata for all 45,000 movies listed in the MovieLens Dataset.
+    <a href='https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset/data' target='_blank'>Link</a>
     </div>
     """,
     unsafe_allow_html=True
