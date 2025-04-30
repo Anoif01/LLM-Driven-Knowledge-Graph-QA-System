@@ -49,7 +49,7 @@ def build_prompt(question):
   Only return one JSON with your reason. Do not generat the question and no-given contents.
 
   Given the question below, extract:
-      - entity: (the key entity mentioned, could be a movie title, a person, a genre, or a year)
+      - entity: (the key entity mentioned, could be a movie, a person, a genre, or a year)
       
       - predicate: (e.g. directed_by, starred_by, has_genre, released_on_date, released_on_year)
       - entity_type: (the type of the extracted entity, could be person, movie, a genre, a date, a year )
@@ -67,6 +67,12 @@ def build_prompt(question):
   → {{"entity": "2022", "entity_type":"year", "predicate": "released_on_year"}}
 
   Example Q4: Show me the genre of Cyher.
+  → {{"entity": "Cypher", "entity_type":"movie", "predicate": "has_genre"}}
+
+  Example Q5: What is the type of Cyher.
+  → {{"entity": "Cypher", "entity_type":"movie", "predicate": "has_genre"}}
+
+  Example Q6: What is the category of Cyher.
   → {{"entity": "Cypher", "entity_type":"movie", "predicate": "has_genre"}}
 
 
