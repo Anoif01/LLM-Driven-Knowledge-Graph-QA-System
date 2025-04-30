@@ -187,8 +187,8 @@ def structured_kg_search(parsed, triples):
         if results == [] and direction == "forward":
             if fuzzy_match(entity, o):
                 results.append((s, p, o))
-                direction = "reverse"
-        elif results == [] and direction == "reverse":
+                direction = "backward"
+        elif results == [] and direction == "backward":
             if fuzzy_match(entity, s):
                 results.append((s, p, o))
                 direction = "forward"
