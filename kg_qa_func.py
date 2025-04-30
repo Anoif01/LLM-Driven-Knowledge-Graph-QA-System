@@ -9,17 +9,7 @@ from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from huggingface_hub import login
 import ast
 
-# ------------------- 环境初始化 -------------------
-
-# 登录 huggingface hub（注意：实际使用请安全管理 token）
-# from google.colab import userdata   # 只在Colab时需要
-# gemma_key = userdata.get('gemma_token')
-# login(token=gemma_key)
-
-# 手动传入 token 时（如果需要）
-# login(token="your_hf_token")
-
-# ------------------- 数据加载 -------------------
+# ------------------- Data Loading -------------------
 def load_triples(file_path='./20002017_triples.csv'):
     triple_df = pd.read_csv(file_path)
     triples = list(zip(triple_df["Subject"], triple_df["Predicate"], triple_df["Object"]))
@@ -30,7 +20,7 @@ def load_triples(file_path='./20002017_triples.csv'):
     # triples = list(zip(triple_df["Subject"], triple_df["Predicate"], triple_df["Object"]))
     # return triples
 
-# ------------------- 模型加载 -------------------
+# ------------------- Model Loading -------------------
 
 def load_qa_pipeline(model_name="google/gemma-2b-it"):
     """
@@ -51,7 +41,7 @@ def load_qa_pipeline(model_name="google/gemma-2b-it"):
     qa_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
     return qa_pipeline
 
-# ------------------- 功能函数 -------------------
+# ------------------- Functions -------------------
 
 def build_prompt(question):
     return f"""
@@ -61,11 +51,11 @@ def build_prompt(question):
   Given the question below, extract:
       - entity: (the key entity mentioned, could be a movie title, a person, a genre, or a year)
       
-      - predicate: (e.g. directed_by, starred_by, has_genre, released_on, released_year)
-      - entity_type: (the type of the extracted entity, could be person, movie, a genre, a year )
+      - predicate: (e.g. directed_by, starred_by, has_genre, released_on_date, released_on_year)
+      - entity_type: (the type of the extracted entity, could be person, movie, a genre, a date, a year )
 
-  Example Q1: Who directed Inception?
-  → {{"entity": "Inception", "entity_type":"movie", predicate": "directed_by"}}
+  Example Q1: When did Inception release?
+  → {{"entity": "Inception", "entity_type":"movie", predicate": "released_on_date"}}
 
   Example Q2: Which films did Tom Hanks act in?
   → {{"entity": "Tom Hanks", "entity_type":"person", "predicate": "starred_by"}}
@@ -74,7 +64,7 @@ def build_prompt(question):
   → {{"entity": "Munin Barua", "entity_type":"person", "predicate": "directed_by"}}
 
   Example Q4: Show me the movies released in 2022.
-  → {{"entity": "2022", "entity_type":"year", "predicate": "released_year"}}
+  → {{"entity": "2022", "entity_type":"year", "predicate": "released_on_year"}}
 
   Example Q4: Show me the genre of Cyher.
   → {{"entity": "Cypher", "entity_type":"movie", "predicate": "has_genre"}}
@@ -105,7 +95,7 @@ def parse_query_with_gemma(question, qa_pipeline):
     except json.JSONDecodeError:
         return {"error": "JSON decode failed", "raw": last_json}
 
-def strip_brackets(text):
+def strip_brackets(text, bracket_pattern):
     """Remove the brackets and their contents"""
     return bracket_pattern.sub('', text).strip()
 
@@ -136,7 +126,7 @@ def fuzzy_match(entity, target, threshold=0.9):
 
     # Case 2: When parentheses exist
     ## Remove all bracket contents
-    m_no_brackets = strip_brackets(m)
+    m_no_brackets = strip_brackets(m, bracket_pattern)
     score_no_brackets = difflib.SequenceMatcher(None, s, m_no_brackets)
     if score_no_brackets.ratio() >= threshold:
         return True
@@ -178,7 +168,7 @@ def structured_kg_search(parsed, triples):
     entity_type = parsed.get("entity_type", "").lower()
     entity = parsed.get("entity", "").lower()
 
-    # 根据实体类型推断方向
+    # Inferring direction based on entity type
     if entity_type == 'movie':
         direction = 'forward'
     else:
@@ -192,6 +182,16 @@ def structured_kg_search(parsed, triples):
             results.append((s, p, o))
         elif direction == "backward" and fuzzy_match(entity, o):
             results.append((s, p, o))
+
+        # if no matched triples, maybe direction is wrong 
+        if results == [] and direction == "forward":
+            if fuzzy_match(entity, o):
+                results.append((s, p, o))
+                direction = "reverse"
+        elif results == [] and direction == "reverse":
+            if fuzzy_match(entity, s):
+                results.append((s, p, o))
+                direction = "forward"
 
     for s, p, o in triples:
         if direction == "forward" and fuzzy_match(entity, s):
@@ -234,7 +234,7 @@ def generate_answer(question, file_path='./20002017_triples.csv', model_name="go
         else:
             return parsed, facts, ", ".join(movies), related_graphs
 
-# ------------------- 测试入口 -------------------
+# ------------------- Test -------------------
 
 if __name__ == "__main__":
     test_question = "Which films did Tom Hanks act in?"
