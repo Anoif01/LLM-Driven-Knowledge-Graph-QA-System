@@ -7,8 +7,7 @@ This repository contains the code, data, and demo video for my personal project 
 ## **Project Overview**
 
 The goal of this project is to build a QA system that answers movie-related questions in natural language using a curated knowledge graph. 
-The system includes:
-(./data/sys_overview.png)
+![System Overview](./data/sys_overview.png)
 
 - An LLM module that analyses user queries into structured triples (subject, relation, object) to extract correctly user demands.
 - A customized matching mechanism that retrieves relevant facts from the KG.
