@@ -1,6 +1,10 @@
 # **LLM-Driven Movie Knowledge Graph QA System**
 
-This repository contains the code, data, and demo video for my personal project on lightweight question-answering (QA) using a Knowledge Graph (KG) and a small LLM (Gemma 2B-It). The system focuses on providing accurate, explainable answers to movie-related questions, covering movies released between 2000 and 2017. The project is designed to run entirely on CPU, demonstrating the power of lightweight LLMs combined with structured knowledge graphs.
+This repository contains the code, data, and demo video for my personal project on lightweight question-answering (QA) using a Knowledge Graph (KG) and a small LLM (Gemma 2B-It). 
+
+The system focuses on providing **accurate, explainable** answers to movie-related questions, covering movies released between 2000 and 2017. 
+
+The project is designed to run **entirely on CPU**, demonstrating the power of lightweight LLMs combined with structured knowledge graphs.
 
 ---
 
