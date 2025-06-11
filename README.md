@@ -7,13 +7,8 @@ This repository contains the code, data, and demo video for my personal project 
 ## **Project Overview**
 
 The goal of this project is to build a QA system that answers movie-related questions in natural language using a curated knowledge graph. 
+The systeme includs: 
 ![System Overview](./data/sys_overview.png)
-
-- An LLM module that analyses user queries into structured triples (subject, relation, object) to extract correctly user demands.
-- A customized matching mechanism that retrieves relevant facts from the KG.
-- Integration of the retrieved triples to generate a natural language answer.
-- Visualization of the  retrieved triples to enhance the interpretability.
-- An interactive Streamlit interface on Hugging Face that displays both the answer and a subgraph visualization of the KG, highlighting the matched nodes.
 
 ---
 
