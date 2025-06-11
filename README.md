@@ -29,7 +29,7 @@ The Movie KG includes:
 
 A demonstration video is available to showcase the system’s capabilities in answering typical movie-related questions.  
 🎥 [Demo Video Link on Youtube](https://www.youtube.com/watch?v=qd1PL1texTk)
-🎥 [Demo Video Link](./data/LLM-Driven-Knowledge-Graph-QA-System-Demo.mp4)
+🎥 ![Demo Video Link](./data/LLM-Driven-Knowledge-Graph-QA-System-Demo.mp4)
 
 Example questions demonstrated in the video:
 - What is the release year of The Martian?
