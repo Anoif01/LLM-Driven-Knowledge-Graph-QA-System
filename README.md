@@ -42,7 +42,10 @@ Example questions demonstrated in the video:
 
 ## **Deployment**
 
-The system is deployed on **Huggingface Spaces**, allowing users to interact with it online. It runs entirely on CPU, demonstrating the feasibility of lightweight LLM-driven QA systems in low-resource environments.  
+The system is deployed on **Huggingface Spaces**, allowing users to interact with it online. 
+
+It runs entirely on CPU, demonstrating the feasibility of lightweight LLM-driven QA systems in low-resource environments.  
+
 👉 [Try it online](https://huggingface.co/spaces/HappyOtter/LLM-Driven-Knowledge-Graph-QA-System).
 
 ---
